@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+from scanner import Scanner, ErrorFrame
 
 class Runner:
     def __init__(self):
@@ -24,12 +25,20 @@ class Runner:
             self._run(line)
             self.had_error = False
 
-    def _run(source): pass
+    def _run(self, source): 
+        scanner = Scanner(source)
+        tokens = scanner.scan_tokens()
+        for token in tokens:
+            print(token)
+        self.maybe_report_errors(scanner.error_frames)
+        return tokens
 
-    def error(self, lineno, message):
-        # Print the error message and line number to stderr
-        print(f"{lineno}: {message}", file=sys.stderr)
-        self.has_error = True
+    def maybe_report_errors(self, error_frames):
+        if len(error_frames) > 0:
+            for error_frame in error_frames:
+                print(error_frame)
+            self.has_error = True
+
 
 
 def main():
