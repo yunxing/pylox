@@ -3,6 +3,7 @@ import sys
 
 from scanner import Scanner, ErrorFrame
 
+
 class Runner:
     def __init__(self):
         self.has_error = False
@@ -25,7 +26,7 @@ class Runner:
             self._run(line)
             self.had_error = False
 
-    def _run(self, source): 
+    def _run(self, source):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         for token in tokens:
@@ -38,7 +39,6 @@ class Runner:
             for error_frame in error_frames:
                 print(error_frame)
             self.has_error = True
-
 
 
 def main():
