@@ -3,15 +3,13 @@ from tokens import Token
 from typing import List, Any
 
 class ExprVisitor:
-    def visit(self, node : Expr):
+    def visit_Binary(self, node : "Binary"):
         pass
-    def visit_Binary(self, node : Binary):
+    def visit_Grouping(self, node : "Grouping"):
         pass
-    def visit_Grouping(self, node : Grouping):
+    def visit_Literal(self, node : "Literal"):
         pass
-    def visit_Literal(self, node : Literal):
-        pass
-    def visit_Unary(self, node : Unary):
+    def visit_Unary(self, node : "Unary"):
         pass
     def default(self, node):
         pass

@@ -35,10 +35,10 @@ def define_visitor(output_file: FileIO, base_name: str, types: List[str]):
     class_names = [type.split(":")[0].strip() for type in types]
     # Generate an abstract visitor class.
     output_file.write(f"class {base_name}Visitor:\n")
-    # Generate the visitor methods for each type.
+    # Generate the visitor methods for each type. Add quotes to the type name as they haven't been parsed yet.
     for class_name in class_names:
         output_file.write(
-            f"    def visit_{class_name}(self, node : {class_name}):\n")
+            f"    def visit_{class_name}(self, node : \"{class_name}\"):\n")
         output_file.write(f"        pass\n")
     # Generate a default visitor method.
     output_file.write(f"    def default(self, node):\n")
