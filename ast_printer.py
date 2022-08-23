@@ -31,18 +31,22 @@ class AstPrinter(lox_ast.ExprVisitor):
         return f"{type(node).__name__}({node})"
 
 
+def print_ast(node: lox_ast.Expr):
+    print(AstPrinter().print(node))
+
+
 if __name__ == "__main__":
-    print(AstPrinter().print(lox_ast.Binary(lox_ast.Literal(1), tokens.Token(
+    print(print_ast(lox_ast.Binary(lox_ast.Literal(1), tokens.Token(
         tokens.TokenType.PLUS, "+", None, 1), lox_ast.Literal(2))))
     print("----------------------------------------------------")
-    print(AstPrinter().print(lox_ast.Grouping(lox_ast.Literal(1))))
+    print(print_ast(lox_ast.Grouping(lox_ast.Literal(1))))
     print("----------------------------------------------------")
-    print(AstPrinter().print(lox_ast.Literal(None)))
+    print(print_ast(lox_ast.Literal(None)))
     print("----------------------------------------------------")
-    print(AstPrinter().print(lox_ast.Unary(tokens.Token(
+    print(print_ast(lox_ast.Unary(tokens.Token(
         tokens.TokenType.MINUS, "-", None, 1), lox_ast.Literal(1))))
     print("----------------------------------------------------")
-    print(AstPrinter().print(lox_ast.Binary(lox_ast.Unary(tokens.Token(
+    print(print_ast(lox_ast.Binary(lox_ast.Unary(tokens.Token(
         tokens.TokenType.MINUS, "-", None, 1), lox_ast.Literal(1)), tokens.Token(
             tokens.TokenType.STAR, "*", None, 1), lox_ast.Binary(lox_ast.Literal(
                 2), tokens.Token(tokens.TokenType.PLUS, "+", None, 1), lox_ast.Literal(3)))))

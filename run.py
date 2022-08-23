@@ -2,6 +2,8 @@ import argparse
 import sys
 
 from scanner import Scanner, ErrorFrame
+from lox_parser import Parser
+import ast_printer
 
 
 class Runner:
@@ -29,16 +31,21 @@ class Runner:
     def _run(self, source):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
-        for token in tokens:
-            print(token)
-        self.maybe_report_errors(scanner.error_frames)
-        return tokens
+        if self.maybe_report_errors(scanner.error_frames):
+            return
+
+        parser = Parser()
+        expr = parser.parse(tokens)
+        if self.maybe_report_errors(parser.error_frames):
+            return
+        ast_printer.print_ast(expr)
 
     def maybe_report_errors(self, error_frames):
         if len(error_frames) > 0:
             for error_frame in error_frames:
                 print(error_frame)
             self.has_error = True
+            return True
 
 
 def main():

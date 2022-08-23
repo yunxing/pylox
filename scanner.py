@@ -36,51 +36,51 @@ class Scanner:
     def scan_token(self):
         c = self._advance()
         if c == '(':
-            self.add_token(tokens.TokenType.LEFT_PAREN)
+            self._add_token(tokens.TokenType.LEFT_PAREN)
         elif c == ')':
-            self.add_token(tokens.TokenType.RIGHT_PAREN)
+            self._add_token(tokens.TokenType.RIGHT_PAREN)
         elif c == '{':
-            self.add_token(tokens.TokenType.LEFT_BRACE)
+            self._add_token(tokens.TokenType.LEFT_BRACE)
         elif c == '}':
-            self.add_token(tokens.TokenType.RIGHT_BRACE)
+            self._add_token(tokens.TokenType.RIGHT_BRACE)
         elif c == ',':
-            self.add_token(tokens.TokenType.COMMA)
+            self._add_token(tokens.TokenType.COMMA)
         elif c == '.':
-            self.add_token(tokens.TokenType.DOT)
+            self._add_token(tokens.TokenType.DOT)
         elif c == '-':
-            self.add_token(tokens.TokenType.MINUS)
+            self._add_token(tokens.TokenType.MINUS)
         elif c == '+':
-            self.add_token(tokens.TokenType.PLUS)
+            self._add_token(tokens.TokenType.PLUS)
         elif c == ';':
-            self.add_token(tokens.TokenType.SEMICOLON)
+            self._add_token(tokens.TokenType.SEMICOLON)
         elif c == '*':
-            self.add_token(tokens.TokenType.STAR)
+            self._add_token(tokens.TokenType.STAR)
         elif c == '!':
             if self.match('='):
-                self.add_token(tokens.TokenType.BANG_EQUAL)
+                self._add_token(tokens.TokenType.BANG_EQUAL)
             else:
-                self.add_token(tokens.TokenType.BANG)
+                self._add_token(tokens.TokenType.BANG)
         elif c == '=':
             if self.match('='):
-                self.add_token(tokens.TokenType.EQUAL_EQUAL)
+                self._add_token(tokens.TokenType.EQUAL_EQUAL)
             else:
-                self.add_token(tokens.TokenType.EQUAL)
+                self._add_token(tokens.TokenType.EQUAL)
         elif c == '<':
             if self.match('='):
-                self.add_token(tokens.TokenType.LESS_EQUAL)
+                self._add_token(tokens.TokenType.LESS_EQUAL)
             else:
-                self.add_token(tokens.TokenType.LESS)
+                self._add_token(tokens.TokenType.LESS)
         elif c == '>':
             if self.match('='):
-                self.add_token(tokens.TokenType.GREATER_EQUAL)
+                self._add_token(tokens.TokenType.GREATER_EQUAL)
             else:
-                self.add_token(tokens.TokenType.GREATER)
+                self._add_token(tokens.TokenType.GREATER)
         elif c == '/':
             if self.match('/'):
                 while self.peek() != '\n' and not self._is_at_end():
                     self._advance()
             else:
-                self.add_token(tokens.TokenType.SLASH)
+                self._add_token(tokens.TokenType.SLASH)
         elif c == ' ' or c == '\r' or c == '\t':
             pass
         elif c == '\n':
