@@ -1,5 +1,5 @@
 from tokens import Token, TokenType
-import lox_ast
+import expressions
 from typing import List, Any
 import dataclasses
 
@@ -30,7 +30,7 @@ class Parser:
         self.current = 0
         self.error_frames: List[ParserErrorFrame] = []
 
-    def parse(self, tokens: List[Token]) -> lox_ast.Expr:
+    def parse(self, tokens: List[Token]) -> expressions.Expr:
         self.tokens = tokens
         self.current = 0
         self.error_frames: List[ParserErrorFrame] = []
@@ -44,10 +44,10 @@ class Parser:
     def add_error(self, message: str):
         self.error_frames.append(ParserErrorFrame(self.peek(), message))
 
-    def expression(self) -> lox_ast.Expr:
+    def expression(self) -> expressions.Expr:
         return self.equality()
 
-    def left_associative_binary(self, parse_right, match_tokens: List[TokenType]) -> lox_ast.Expr:
+    def left_associative_binary(self, parse_right, match_tokens: List[TokenType]) -> expressions.Expr:
         '''
         Helper function for binary expressions that are left associative.
         '''
@@ -56,43 +56,43 @@ class Parser:
         while self.match(*match_tokens):
             operator = self.previous()
             right = parse_right()
-            expr = lox_ast.Binary(expr, operator, right)
+            expr = expressions.Binary(expr, operator, right)
 
         return expr
 
-    def equality(self) -> lox_ast.Expr:
+    def equality(self) -> expressions.Expr:
         return self.left_associative_binary(self.comparison, [TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])
 
-    def comparison(self) -> lox_ast.Expr:
+    def comparison(self) -> expressions.Expr:
         return self.left_associative_binary(self.term, [TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])
 
-    def term(self) -> lox_ast.Expr:
+    def term(self) -> expressions.Expr:
         return self.left_associative_binary(self.factor, [TokenType.MINUS, TokenType.PLUS])
 
-    def factor(self) -> lox_ast.Expr:
+    def factor(self) -> expressions.Expr:
         return self.left_associative_binary(self.unary, [TokenType.SLASH, TokenType.STAR])
 
-    def unary(self) -> lox_ast.Expr:
+    def unary(self) -> expressions.Expr:
         if self.match(TokenType.BANG, TokenType.MINUS):
             operator = self.previous()
             right = self.unary()
-            return lox_ast.Unary(operator, right)
+            return expressions.Unary(operator, right)
         return self.primary()
 
-    def primary(self) -> lox_ast.Expr:
+    def primary(self) -> expressions.Expr:
         if self.match(TokenType.FALSE):
-            return lox_ast.Literal(False)
+            return expressions.Literal(False)
         if self.match(TokenType.TRUE):
-            return lox_ast.Literal(True)
+            return expressions.Literal(True)
         if self.match(TokenType.NIL):
-            return lox_ast.Literal(None)
+            return expressions.Literal(None)
         if self.match(TokenType.NUMBER, TokenType.STRING):
-            return lox_ast.Literal(self.previous().literal)
+            return expressions.Literal(self.previous().literal)
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN,
                          "Expect ')' after expression.")
-            return lox_ast.Grouping(expr)
+            return expressions.Grouping(expr)
         self.error(self.peek(), "Expect expression.")
 
     def consume(self, token_type: TokenType, message: str):

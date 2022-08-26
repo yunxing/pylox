@@ -4,7 +4,7 @@ from typing import Any
 
 class AutoName(Enum):
     def _generate_next_value_(name, start, count, last_values):
-        return name
+        return name.lower()
 
 
 class TokenType(AutoName):
@@ -76,8 +76,10 @@ class ReservedKeyword(AutoName):
 
 
 def is_reserved_keyword(string) -> bool:
-    # Check if uppercase of string is in the value field of the ReservedKeyword enum
-    return string.upper() in ReservedKeyword.__members__.keys()
+    # Get the set of values for the enum ReservedKeyword
+    values = ReservedKeyword.__members__.values()
+    # Check if string is in the value field of the ReservedKeyword enum
+    return string in set(v.value for v in ReservedKeyword.__members__.values())
 
 
 def get_reserved_keyword_as_token(string) -> TokenType:

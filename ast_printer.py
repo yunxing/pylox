@@ -1,52 +1,52 @@
-import lox_ast
+import expressions
 import tokens
 
 
-class AstPrinter(lox_ast.ExprVisitor):
-    def print(self, node: lox_ast.Expr):
+class AstPrinter(expressions.ExprVisitor):
+    def print(self, node: expressions.Expr):
         return node.accept(self)
 
-    def parenthesize(self, name: str, *nodes: lox_ast.Expr):
+    def parenthesize(self, name: str, *nodes: expressions.Expr):
         r = f"{name}("
         for node in nodes:
             r += node.accept(self) + ", "
         r = r[:-2] + ")"
         return r
 
-    def visit_binary(self, node: lox_ast.Binary):
+    def visit_binary(self, node: expressions.Binary):
         return self.parenthesize(node.operator.lexeme, node.left, node.right)
 
-    def visit_grouping(self, node: lox_ast.Grouping):
+    def visit_grouping(self, node: expressions.Grouping):
         return self.parenthesize("Grouping", node.expression)
 
-    def visit_literal(self, node: lox_ast.Literal):
+    def visit_literal(self, node: expressions.Literal):
         if node.value is None:
             return "Literal(nil)"
         return f"Literal({node.value})"
 
-    def visit_unary(self, node: lox_ast.Unary):
+    def visit_unary(self, node: expressions.Unary):
         return self.parenthesize(node.operator.lexeme, node.right)
 
     def default(self, node):
         return f"{type(node).__name__}({node})"
 
 
-def print_ast(node: lox_ast.Expr):
+def print_ast(node: expressions.Expr):
     print(AstPrinter().print(node))
 
 
 if __name__ == "__main__":
-    print(print_ast(lox_ast.Binary(lox_ast.Literal(1), tokens.Token(
-        tokens.TokenType.PLUS, "+", None, 1), lox_ast.Literal(2))))
+    print(print_ast(expressions.Binary(expressions.Literal(1), tokens.Token(
+        tokens.TokenType.PLUS, "+", None, 1), expressions.Literal(2))))
     print("----------------------------------------------------")
-    print(print_ast(lox_ast.Grouping(lox_ast.Literal(1))))
+    print(print_ast(expressions.Grouping(expressions.Literal(1))))
     print("----------------------------------------------------")
-    print(print_ast(lox_ast.Literal(None)))
+    print(print_ast(expressions.Literal(None)))
     print("----------------------------------------------------")
-    print(print_ast(lox_ast.Unary(tokens.Token(
-        tokens.TokenType.MINUS, "-", None, 1), lox_ast.Literal(1))))
+    print(print_ast(expressions.Unary(tokens.Token(
+        tokens.TokenType.MINUS, "-", None, 1), expressions.Literal(1))))
     print("----------------------------------------------------")
-    print(print_ast(lox_ast.Binary(lox_ast.Unary(tokens.Token(
-        tokens.TokenType.MINUS, "-", None, 1), lox_ast.Literal(1)), tokens.Token(
-            tokens.TokenType.STAR, "*", None, 1), lox_ast.Binary(lox_ast.Literal(
-                2), tokens.Token(tokens.TokenType.PLUS, "+", None, 1), lox_ast.Literal(3)))))
+    print(print_ast(expressions.Binary(expressions.Unary(tokens.Token(
+        tokens.TokenType.MINUS, "-", None, 1), expressions.Literal(1)), tokens.Token(
+            tokens.TokenType.STAR, "*", None, 1), expressions.Binary(expressions.Literal(
+                2), tokens.Token(tokens.TokenType.PLUS, "+", None, 1), expressions.Literal(3)))))
