@@ -13,18 +13,18 @@ class AstPrinter(lox_ast.ExprVisitor):
         r = r[:-2] + ")"
         return r
 
-    def visit_Binary(self, node: lox_ast.Binary):
+    def visit_binary(self, node: lox_ast.Binary):
         return self.parenthesize(node.operator.lexeme, node.left, node.right)
 
-    def visit_Grouping(self, node: lox_ast.Grouping):
+    def visit_grouping(self, node: lox_ast.Grouping):
         return self.parenthesize("Grouping", node.expression)
 
-    def visit_Literal(self, node: lox_ast.Literal):
+    def visit_literal(self, node: lox_ast.Literal):
         if node.value is None:
             return "Literal(nil)"
         return f"Literal({node.value})"
 
-    def visit_Unary(self, node: lox_ast.Unary):
+    def visit_unary(self, node: lox_ast.Unary):
         return self.parenthesize(node.operator.lexeme, node.right)
 
     def default(self, node):
