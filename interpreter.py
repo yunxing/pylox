@@ -38,8 +38,16 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
                 error.token.line, error.message))
             return
 
-    # Statements
+    def stringify(self, value: Any) -> str:
+        if value is None:
+            return "nil"
+        if isinstance(value, float):
+            return f"{value:.2f}"
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        return str(value)
 
+    # Statements
     def visit_var_stmt(self, node: statements.Var):
         value = None
         if node.initializer is not None:
@@ -54,20 +62,23 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         value = self.evaluate(node.expression)
         print(self.stringify(value))
 
-    def stringify(self, value: Any) -> str:
-        if value is None:
-            return "nil"
-        if isinstance(value, float):
-            return f"{value:.2f}"
-        if isinstance(value, bool):
-            return "true" if value else "false"
-        return str(value)
+    def visit_block_stmt(self, node: statements.Block):
+        self.execute_block(node.statements, Environment(self.environment))
 
+    def execute_block(self, statements: List[statements.Stmt], environment: Environment):
+        previous = self.environment
+        try:
+            self.environment = environment
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous
+
+    # Expressions
     def visit_assign_expr(self, node: expressions.Assign):
         value = self.evaluate(node.value)
         self.environment.assign(node.name, value)
         return value
-    # Expressions
 
     def visit_grouping_expr(self, node: expressions.Grouping):
         return self.evaluate(node.expression)

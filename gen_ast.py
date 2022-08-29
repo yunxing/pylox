@@ -117,6 +117,7 @@ def main():
         args.output_directory, 'statements.py'), 'w')
     define_ast(output_file, "Stmt", [
         "Expression : Expr expression",
+        "Block : List[Stmt] statements",
         "Var: Token name, Expr initializer",
         "Print : Expr expression"
     ], extra_imports=["from expressions import Expr"])

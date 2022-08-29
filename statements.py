@@ -6,6 +6,8 @@ from expressions import Expr
 class StmtVisitor:
     def visit_expression_stmt(self, node : "Expression"):
         pass
+    def visit_block_stmt(self, node : "Block"):
+        pass
     def visit_var_stmt(self, node : "Var"):
         pass
     def visit_print_stmt(self, node : "Print"):
@@ -17,6 +19,8 @@ class Stmt:
     def accept(self, visitor : StmtVisitor):
         if isinstance(self, Expression):
             return visitor.visit_expression_stmt(self)
+        if isinstance(self, Block):
+            return visitor.visit_block_stmt(self)
         if isinstance(self, Var):
             return visitor.visit_var_stmt(self)
         if isinstance(self, Print):
@@ -30,6 +34,17 @@ class Expression(Stmt):
         r = "Expression("
         r += f"expression : Expr = "
         r += str(self.expression)
+        r += ","
+
+        r += ")"
+        return r
+class Block(Stmt):
+    def __init__(self , statements : List[Stmt]):
+        self.statements : List[Stmt] = statements
+    def __str__(self):
+        r = "Block("
+        r += f"statements : List[Stmt] = "
+        r += str(self.statements)
         r += ","
 
         r += ")"

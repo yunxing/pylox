@@ -110,10 +110,10 @@ class Scanner:
             self._advance()
 
         if self.peek() == '.' and self.peek_next().isdigit():
-            self.advance()
+            self._advance()
 
             while self.peek().isdigit():
-                self.advance()
+                self._advance()
 
         self._add_token(tokens.TokenType.NUMBER, float(
             self.source[self.start:self.current]))
@@ -122,12 +122,12 @@ class Scanner:
         while self.peek() != '"' and not self._is_at_end():
             if self.peek() == '\n':
                 self.line += 1
-            self.advance()
+            self._advance()
 
         if self._is_at_end():
             self.add_error("Unterminated string")
             return
-        self.advance()
+        self._advance()
         value = self.source[self.start + 1:self.current - 1]
         self._add_token(tokens.TokenType.STRING, value)
 
