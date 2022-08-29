@@ -39,13 +39,31 @@ class Parser:
 
         try:
             while not self.is_at_end():
-                statements.append(self.statement())
+                statements.append(self.declaration())
             return statements
         except ParserError as e:
             return []
 
     def add_error(self, message: str):
         self.error_frames.append(ParserErrorFrame(self.peek(), message))
+
+    def declaration(self) -> statements.Stmt:
+        try:
+            if self.match(TokenType.VAR):
+                return self.var_declaration()
+            return self.statement()
+        except ParserError as e:
+            self.synchronize()
+            return None
+
+    def var_declaration(self) -> statements.Stmt:
+        name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
+        initializer = None
+        if self.match(TokenType.EQUAL):
+            initializer = self.expression()
+        self.consume(TokenType.SEMICOLON,
+                     "Expect ';' after variable declaration.")
+        return statements.Var(name, initializer)
 
     def statement(self) -> statements.Stmt:
         if self.match(TokenType.PRINT):
@@ -111,6 +129,8 @@ class Parser:
             self.consume(TokenType.RIGHT_PAREN,
                          "Expect ')' after expression.")
             return expressions.Grouping(expr)
+        if self.match(TokenType.IDENTIFIER):
+            return expressions.Variable(self.previous())
         self.error(self.peek(), "Expect expression.")
 
     def consume(self, token_type: TokenType, message: str):
