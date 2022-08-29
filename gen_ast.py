@@ -104,6 +104,7 @@ def main():
     output_file = open(os.path.join(
         args.output_directory, 'expressions.py'), 'w')
     define_ast(output_file, "Expr", [
+        "Assign   : Token name, Expr value",
         "Binary : Expr left, Token operator, Expr right",
         "Grouping : Expr expression",
         "Literal : Any value",

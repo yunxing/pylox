@@ -3,12 +3,8 @@ import statements
 from tokens import TokenType, Token
 from typing import List, Any
 import dataclasses
-
-
-class RuntimeError(Exception):
-    def __init__(self, token: Token, message: str) -> None:
-        super().__init__(message)
-        self.token = token
+from runtime_error import RuntimeError
+from environment import Environment
 
 
 @dataclasses.dataclass
@@ -22,6 +18,7 @@ class ErrorFrame:
 
 class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     def __init__(self) -> None:
+        self.environment = Environment()
         self.error_frames = []
 
     def evaluate(self, expr: expressions.Expr) -> Any:
@@ -41,7 +38,16 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
                 error.token.line, error.message))
             return
 
-    def visit_expression_stmt(self, node: "Expression"):
+    # Statements
+
+    def visit_var_stmt(self, node: statements.Var):
+        value = None
+        if node.initializer is not None:
+            value = self.evaluate(node.initializer)
+        self.environment.define(node.name, value)
+        return None
+
+    def visit_expression_stmt(self, node: statements.Expression):
         return self.evaluate(node.expression)
 
     def visit_print_stmt(self, node: statements.Print):
@@ -57,8 +63,17 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
             return "true" if value else "false"
         return str(value)
 
+    def visit_assign_expr(self, node: expressions.Assign):
+        value = self.evaluate(node.value)
+        self.environment.assign(node.name, value)
+        return value
+    # Expressions
+
     def visit_grouping_expr(self, node: expressions.Grouping):
         return self.evaluate(node.expression)
+
+    def visit_variable_expr(self, node: expressions.Variable):
+        return self.environment.get(node.name)
 
     def visit_literal_expr(self, node: expressions.Literal):
         return node.value

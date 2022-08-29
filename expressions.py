@@ -3,6 +3,8 @@ from tokens import Token
 from typing import List, Any
 
 class ExprVisitor:
+    def visit_assign_expr(self, node : "Assign"):
+        pass
     def visit_binary_expr(self, node : "Binary"):
         pass
     def visit_grouping_expr(self, node : "Grouping"):
@@ -18,6 +20,8 @@ class ExprVisitor:
 
 class Expr:
     def accept(self, visitor : ExprVisitor):
+        if isinstance(self, Assign):
+            return visitor.visit_assign_expr(self)
         if isinstance(self, Binary):
             return visitor.visit_binary_expr(self)
         if isinstance(self, Grouping):
@@ -30,6 +34,22 @@ class Expr:
             return visitor.visit_unary_expr(self)
         return visitor.default_expr(self)
 
+class Assign(Expr):
+    def __init__(self , name : Token, value : Expr):
+        self.name : Token = name
+        self.value : Expr = value
+    def __str__(self):
+        r = "Assign("
+        r += f"name : Token = "
+        r += str(self.name)
+        r += ","
+
+        r += f"value : Expr = "
+        r += str(self.value)
+        r += ","
+
+        r += ")"
+        return r
 class Binary(Expr):
     def __init__(self , left : Expr, operator : Token, right : Expr):
         self.left : Expr = left

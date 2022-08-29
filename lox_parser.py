@@ -81,7 +81,17 @@ class Parser:
         return statements.Expression(expr)
 
     def expression(self) -> expressions.Expr:
-        return self.equality()
+        return self.assignment()
+
+    def assignment(self) -> expressions.Expr:
+        expr = self.equality()
+        if self.match(TokenType.EQUAL):
+            operator = self.previous()
+            right = self.assignment()
+            if isinstance(expr, expressions.Variable):
+                return expressions.Assign(expr.name, right)
+            self.error(operator, "Invalid assignment target.")
+        return expr
 
     def left_associative_binary(self, parse_right, match_tokens: List[TokenType]) -> expressions.Expr:
         '''
@@ -149,10 +159,10 @@ class Parser:
         self.advance()
 
         while not self.is_at_end():
-            if self.previous().token_type == TokenType.SEMICOLON:
+            if self.previous().type == TokenType.SEMICOLON:
                 return
 
-            token_type = self.peek().token_type
+            token_type = self.peek().type
             if token_type in [TokenType.CLASS, TokenType.FUN, TokenType.VAR, TokenType.FOR, TokenType.IF, TokenType.WHILE, TokenType.PRINT, TokenType.RETURN]:
                 return
 
