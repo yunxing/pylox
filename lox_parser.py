@@ -1,5 +1,6 @@
 from tokens import Token, TokenType
 import expressions
+import statements
 from typing import List, Any
 import dataclasses
 
@@ -30,19 +31,36 @@ class Parser:
         self.current = 0
         self.error_frames: List[ParserErrorFrame] = []
 
-    def parse(self, tokens: List[Token]) -> expressions.Expr:
+    def parse(self, tokens: List[Token]) -> List[statements.Stmt]:
         self.tokens = tokens
         self.current = 0
         self.error_frames: List[ParserErrorFrame] = []
+        statements: List[statements.Stmt] = []
 
         try:
-            return self.expression()
+            while not self.is_at_end():
+                statements.append(self.statement())
+            return statements
         except ParserError as e:
-            print(e)
-            return None
+            return []
 
     def add_error(self, message: str):
         self.error_frames.append(ParserErrorFrame(self.peek(), message))
+
+    def statement(self) -> statements.Stmt:
+        if self.match(TokenType.PRINT):
+            return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self) -> statements.Stmt:
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return statements.Print(value)
+
+    def expression_statement(self) -> statements.Stmt:
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+        return statements.Expression(expr)
 
     def expression(self) -> expressions.Expr:
         return self.equality()

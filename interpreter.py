@@ -1,4 +1,5 @@
 import expressions
+import statements
 from tokens import TokenType, Token
 from typing import List, Any
 import dataclasses
@@ -19,23 +20,33 @@ class ErrorFrame:
         return f"{self.line}: {self.message}"
 
 
-class Interpreter(expressions.ExprVisitor):
+class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     def __init__(self) -> None:
         self.error_frames = []
 
     def evaluate(self, expr: expressions.Expr) -> Any:
         return expr.accept(self)
 
-    def interpret(self, expr: expressions.Expr) -> None:
+    def execute(self, stmt: statements.Stmt) -> None:
+        stmt.accept(self)
+
+    def interpret(self, statements: List[statements.Stmt]) -> None:
         try:
             self.error_frames = []
-            value = self.evaluate(expr)
-            print(self.stringify(value))
+            for statement in statements:
+                self.execute(statement)
         except RuntimeError as error:
             self._had_runtime_error = True
             self.error_frames.append(ErrorFrame(
                 error.token.line, error.message))
             return
+
+    def visit_expression_stmt(self, node: "Expression"):
+        return self.evaluate(node.expression)
+
+    def visit_print_stmt(self, node: statements.Print):
+        value = self.evaluate(node.expression)
+        print(self.stringify(value))
 
     def stringify(self, value: Any) -> str:
         if value is None:
@@ -46,13 +57,13 @@ class Interpreter(expressions.ExprVisitor):
             return "true" if value else "false"
         return str(value)
 
-    def visit_grouping(self, node: expressions.Grouping):
+    def visit_grouping_expr(self, node: expressions.Grouping):
         return self.evaluate(node.expression)
 
-    def visit_literal(self, node: expressions.Literal):
+    def visit_literal_expr(self, node: expressions.Literal):
         return node.value
 
-    def visit_unary(self, node: expressions.Unary):
+    def visit_unary_expr(self, node: expressions.Unary):
         if node.operator.type == TokenType.MINUS:
             return -self.evaluate(node.right)
         elif node.operator.type == TokenType.BANG:
@@ -60,7 +71,7 @@ class Interpreter(expressions.ExprVisitor):
 
         raise RuntimeError(f"Unknown unary operator {node.operator.lexeme}")
 
-    def visit_binary(self, node: expressions.Binary):
+    def visit_binary_expr(self, node: expressions.Binary):
         left = self.evaluate(node.left)
         right = self.evaluate(node.right)
 

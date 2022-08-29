@@ -3,28 +3,28 @@ from tokens import Token
 from typing import List, Any
 
 class ExprVisitor:
-    def visit_binary(self, node : "Binary"):
+    def visit_binary_expr(self, node : "Binary"):
         pass
-    def visit_grouping(self, node : "Grouping"):
+    def visit_grouping_expr(self, node : "Grouping"):
         pass
-    def visit_literal(self, node : "Literal"):
+    def visit_literal_expr(self, node : "Literal"):
         pass
-    def visit_unary(self, node : "Unary"):
+    def visit_unary_expr(self, node : "Unary"):
         pass
-    def default(self, node):
+    def default_expr(self, node):
         pass
 
 class Expr:
     def accept(self, visitor : ExprVisitor):
         if isinstance(self, Binary):
-            return visitor.visit_binary(self)
+            return visitor.visit_binary_expr(self)
         if isinstance(self, Grouping):
-            return visitor.visit_grouping(self)
+            return visitor.visit_grouping_expr(self)
         if isinstance(self, Literal):
-            return visitor.visit_literal(self)
+            return visitor.visit_literal_expr(self)
         if isinstance(self, Unary):
-            return visitor.visit_unary(self)
-        return visitor.default(self)
+            return visitor.visit_unary_expr(self)
+        return visitor.default_expr(self)
 
 class Binary(Expr):
     def __init__(self , left : Expr, operator : Token, right : Expr):

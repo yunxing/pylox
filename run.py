@@ -45,15 +45,15 @@ class Runner:
                 print(token)
 
         parser = Parser()
-        expr = parser.parse(tokens)
+        statements = parser.parse(tokens)
         if self.maybe_report_errors(parser.error_frames):
             print("Exiting because of parser errors.")
             return
         if self.verbose:
             print("AST:")
-            ast_printer.print_ast(expr)
+            ast_printer.print_ast(statements)
 
-        self.interpreter.interpret(expr)
+        self.interpreter.interpret(statements)
         if self.maybe_report_errors(self.interpreter.error_frames):
             print("Got interpreter errors.")
 

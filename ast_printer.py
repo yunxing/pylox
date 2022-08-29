@@ -1,10 +1,12 @@
 import expressions
+import statements
 import tokens
 
 
-class AstPrinter(expressions.ExprVisitor):
-    def print(self, node: expressions.Expr):
-        return node.accept(self)
+class AstPrinter(expressions.ExprVisitor, statements.StmtVisitor):
+    def print(self, statements):
+        for statement in statements:
+            print(statement.accept(self))
 
     def parenthesize(self, name: str, *nodes: expressions.Expr):
         r = f"{name}("
@@ -13,26 +15,32 @@ class AstPrinter(expressions.ExprVisitor):
         r = r[:-2] + ")"
         return r
 
-    def visit_binary(self, node: expressions.Binary):
+    def visit_expression_stmt(self, node):
+        return node.expression.accept(self)
+
+    def visit_print_stmt(self, node):
+        return self.parenthesize("Print", node.expression.accept(self))
+
+    def visit_binary_expr(self, node: expressions.Binary):
         return self.parenthesize(node.operator.lexeme, node.left, node.right)
 
-    def visit_grouping(self, node: expressions.Grouping):
+    def visit_grouping_expr(self, node: expressions.Grouping):
         return self.parenthesize("Grouping", node.expression)
 
-    def visit_literal(self, node: expressions.Literal):
+    def visit_literal_expr(self, node: expressions.Literal):
         if node.value is None:
             return "Literal(nil)"
         return f"Literal({node.value})"
 
-    def visit_unary(self, node: expressions.Unary):
+    def visit_unary_expr(self, node: expressions.Unary):
         return self.parenthesize(node.operator.lexeme, node.right)
 
-    def default(self, node):
+    def default_expr(self, node):
         return f"{type(node).__name__}({node})"
 
 
-def print_ast(node: expressions.Expr):
-    print(AstPrinter().print(node))
+def print_ast(statement: statements.Stmt):
+    AstPrinter().print(statements)
 
 
 if __name__ == "__main__":

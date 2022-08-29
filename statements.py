@@ -5,23 +5,23 @@ from expressions import Expr
 
 
 class StmtVisitor:
-    def visit_expression(self, node: "Expression"):
+    def visit_expression_stmt(self, node: "Expression"):
         pass
 
-    def visit_print(self, node: "Print"):
+    def visit_print_stmt(self, node: "Print"):
         pass
 
-    def default(self, node):
+    def default_stmt(self, node):
         pass
 
 
 class Stmt:
     def accept(self, visitor: StmtVisitor):
         if isinstance(self, Expression):
-            return visitor.visit_expression(self)
+            return visitor.visit_expression_stmt(self)
         if isinstance(self, Print):
-            return visitor.visit_print(self)
-        return visitor.default(self)
+            return visitor.visit_print_stmt(self)
+        return visitor.default_stmt(self)
 
 
 class Expression(Stmt):
