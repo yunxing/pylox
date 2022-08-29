@@ -107,6 +107,7 @@ def main():
         "Binary : Expr left, Token operator, Expr right",
         "Grouping : Expr expression",
         "Literal : Any value",
+        "Variable : Token name",
         "Unary : Token operator, Expr right",
     ])
 
@@ -115,6 +116,7 @@ def main():
         args.output_directory, 'statements.py'), 'w')
     define_ast(output_file, "Stmt", [
         "Expression : Expr expression",
+        "Var: Token name, Expr initializer",
         "Print : Expr expression"
     ], extra_imports=["from expressions import Expr"])
 

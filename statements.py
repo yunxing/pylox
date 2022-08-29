@@ -3,31 +3,29 @@ from tokens import Token
 from typing import List, Any
 from expressions import Expr
 
-
 class StmtVisitor:
-    def visit_expression_stmt(self, node: "Expression"):
+    def visit_expression_stmt(self, node : "Expression"):
         pass
-
-    def visit_print_stmt(self, node: "Print"):
+    def visit_var_stmt(self, node : "Var"):
         pass
-
+    def visit_print_stmt(self, node : "Print"):
+        pass
     def default_stmt(self, node):
         pass
 
-
 class Stmt:
-    def accept(self, visitor: StmtVisitor):
+    def accept(self, visitor : StmtVisitor):
         if isinstance(self, Expression):
             return visitor.visit_expression_stmt(self)
+        if isinstance(self, Var):
+            return visitor.visit_var_stmt(self)
         if isinstance(self, Print):
             return visitor.visit_print_stmt(self)
         return visitor.default_stmt(self)
 
-
 class Expression(Stmt):
-    def __init__(self, expression: Expr):
-        self.expression: Expr = expression
-
+    def __init__(self , expression : Expr):
+        self.expression : Expr = expression
     def __str__(self):
         r = "Expression("
         r += f"expression : Expr = "
@@ -36,12 +34,25 @@ class Expression(Stmt):
 
         r += ")"
         return r
+class Var(Stmt):
+    def __init__(self , name : Token, initializer : Expr):
+        self.name : Token = name
+        self.initializer : Expr = initializer
+    def __str__(self):
+        r = "Var("
+        r += f"name : Token = "
+        r += str(self.name)
+        r += ","
 
+        r += f"initializer : Expr = "
+        r += str(self.initializer)
+        r += ","
 
+        r += ")"
+        return r
 class Print(Stmt):
-    def __init__(self, expression: Expr):
-        self.expression: Expr = expression
-
+    def __init__(self , expression : Expr):
+        self.expression : Expr = expression
     def __str__(self):
         r = "Print("
         r += f"expression : Expr = "
@@ -50,3 +61,4 @@ class Print(Stmt):
 
         r += ")"
         return r
+
