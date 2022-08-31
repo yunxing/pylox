@@ -18,8 +18,8 @@ class Environment:
         raise RuntimeError(
             name, f"Undefined variable assignment: {name.lexeme}.")
 
-    def define(self, name: Token, value: Any) -> None:
-        self.values[name.lexeme] = value
+    def define(self, name: str, value: Any) -> None:
+        self.values[name] = value
 
     def get(self, name: Token) -> Any:
         if name.lexeme in self.values:

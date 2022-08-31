@@ -4,7 +4,9 @@ from tokens import TokenType, Token
 from typing import List, Any
 import dataclasses
 from runtime_error import RuntimeError
+from return_exception import ReturnException
 from environment import Environment
+import time
 
 
 @dataclasses.dataclass
@@ -16,10 +18,57 @@ class ErrorFrame:
         return f"{self.line}: {self.message}"
 
 
+class Callable:
+    def arity(self):
+        raise NotImplementedError()
+
+    def call(self, interpreter, args):
+        raise NotImplementedError()
+
+
+class LoxFunction(Callable):
+    def __init__(self, declaration: statements.Function):
+        self.declaration = declaration
+        self._arity = len(declaration.params)
+
+    def call(self, interpreter, args):
+        environment = Environment(interpreter.globals)
+        for i in range(len(args)):
+            environment.define(self.declaration.params[i].lexeme, args[i])
+        try:
+            interpreter.execute_block(self.declaration.body, environment)
+        except ReturnException as e:
+            return e.value
+        return None
+
+    def arity(self):
+        return self._arity
+
+    def __str__(self) -> str:
+        return f"<fn {self.declaration.name.lexeme}, arity {self.arity()}>"
+
+
 class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     def __init__(self) -> None:
-        self.environment = Environment()
+        self.globals = self.global_env()
+        self.environment = self.globals
         self.error_frames = []
+
+    def global_env(self):
+        class Clock(Callable):
+            def arity(self):
+                return 0
+
+            def call(self, interpreter, args):
+                # Returns the current system time in milliseconds.
+                return time.time()
+
+            def __str__(self):
+                return "<native fn> Clock()"
+
+        r = Environment()
+        r.define("clock", Clock())
+        return r
 
     def evaluate(self, expr: expressions.Expr) -> Any:
         return expr.accept(self)
@@ -52,8 +101,19 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         value = None
         if node.initializer is not None:
             value = self.evaluate(node.initializer)
-        self.environment.define(node.name, value)
+        self.environment.define(node.name.lexeme, value)
         return None
+
+    def visit_function_stmt(self, node: statements.Function):
+        f = LoxFunction(node)
+        self.environment.define(node.name.lexeme, f)
+        return None
+
+    def visit_return_stmt(self, node: statements.Return):
+        value = None
+        if node.value is not None:
+            value = self.evaluate(node.value)
+        raise ReturnException(value)
 
     def visit_expression_stmt(self, node: statements.Expression):
         return self.evaluate(node.expression)
@@ -91,6 +151,17 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         value = self.evaluate(node.value)
         self.environment.assign(node.name, value)
         return value
+
+    def visit_call_expr(self, node: expressions.Call):
+        callee = self.evaluate(node.callee)
+        if not isinstance(callee, Callable):
+            raise RuntimeError(
+                node.paren, "Can only call functions and classes.")
+        arguments = [self.evaluate(arg) for arg in node.arguments]
+        if len(arguments) != callee.arity():
+            raise RuntimeError(
+                node.paren, f"Expected {callee.arity()} arguments but got {len(arguments)}.")
+        return callee.call(self, arguments)
 
     def visit_grouping_expr(self, node: expressions.Grouping):
         return self.evaluate(node.expression)

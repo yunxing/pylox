@@ -95,5 +95,5 @@ class Token:
 
     def __str__(self):
         if self.literal is None:
-            return f"{self.type} lexeme: {self.lexeme}"
-        return f"{self.type} lexeme: {self.lexeme} literal: {self.literal}"
+            return f"{self.type} lexeme: `{self.lexeme}`"
+        return f"{self.type} lexeme: `{self.lexeme}` literal: {self.literal}"

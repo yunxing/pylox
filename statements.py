@@ -6,11 +6,15 @@ from expressions import Expr
 class StmtVisitor:
     def visit_expression_stmt(self, node : "Expression"):
         pass
+    def visit_function_stmt(self, node : "Function"):
+        pass
     def visit_if_stmt(self, node : "If"):
         pass
     def visit_block_stmt(self, node : "Block"):
         pass
     def visit_var_stmt(self, node : "Var"):
+        pass
+    def visit_return_stmt(self, node : "Return"):
         pass
     def visit_print_stmt(self, node : "Print"):
         pass
@@ -23,12 +27,16 @@ class Stmt:
     def accept(self, visitor : StmtVisitor):
         if isinstance(self, Expression):
             return visitor.visit_expression_stmt(self)
+        if isinstance(self, Function):
+            return visitor.visit_function_stmt(self)
         if isinstance(self, If):
             return visitor.visit_if_stmt(self)
         if isinstance(self, Block):
             return visitor.visit_block_stmt(self)
         if isinstance(self, Var):
             return visitor.visit_var_stmt(self)
+        if isinstance(self, Return):
+            return visitor.visit_return_stmt(self)
         if isinstance(self, Print):
             return visitor.visit_print_stmt(self)
         if isinstance(self, While):
@@ -42,6 +50,27 @@ class Expression(Stmt):
         r = "Expression("
         r += f"expression : Expr = "
         r += str(self.expression)
+        r += ","
+
+        r += ")"
+        return r
+class Function(Stmt):
+    def __init__(self , name : Token, params : List[Token], body : List[Stmt]):
+        self.name : Token = name
+        self.params : List[Token] = params
+        self.body : List[Stmt] = body
+    def __str__(self):
+        r = "Function("
+        r += f"name : Token = "
+        r += str(self.name)
+        r += ","
+
+        r += f"params : List[Token] = "
+        r += str(self.params)
+        r += ","
+
+        r += f"body : List[Stmt] = "
+        r += str(self.body)
         r += ","
 
         r += ")"
@@ -90,6 +119,22 @@ class Var(Stmt):
 
         r += f"initializer : Expr = "
         r += str(self.initializer)
+        r += ","
+
+        r += ")"
+        return r
+class Return(Stmt):
+    def __init__(self , keyword : Token, value : Expr):
+        self.keyword : Token = keyword
+        self.value : Expr = value
+    def __str__(self):
+        r = "Return("
+        r += f"keyword : Token = "
+        r += str(self.keyword)
+        r += ","
+
+        r += f"value : Expr = "
+        r += str(self.value)
         r += ","
 
         r += ")"

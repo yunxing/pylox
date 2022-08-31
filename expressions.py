@@ -7,6 +7,8 @@ class ExprVisitor:
         pass
     def visit_binary_expr(self, node : "Binary"):
         pass
+    def visit_call_expr(self, node : "Call"):
+        pass
     def visit_grouping_expr(self, node : "Grouping"):
         pass
     def visit_literal_expr(self, node : "Literal"):
@@ -26,6 +28,8 @@ class Expr:
             return visitor.visit_assign_expr(self)
         if isinstance(self, Binary):
             return visitor.visit_binary_expr(self)
+        if isinstance(self, Call):
+            return visitor.visit_call_expr(self)
         if isinstance(self, Grouping):
             return visitor.visit_grouping_expr(self)
         if isinstance(self, Literal):
@@ -71,6 +75,27 @@ class Binary(Expr):
 
         r += f"right : Expr = "
         r += str(self.right)
+        r += ","
+
+        r += ")"
+        return r
+class Call(Expr):
+    def __init__(self , callee : Expr, paren : Token, arguments : List[Expr]):
+        self.callee : Expr = callee
+        self.paren : Token = paren
+        self.arguments : List[Expr] = arguments
+    def __str__(self):
+        r = "Call("
+        r += f"callee : Expr = "
+        r += str(self.callee)
+        r += ","
+
+        r += f"paren : Token = "
+        r += str(self.paren)
+        r += ","
+
+        r += f"arguments : List[Expr] = "
+        r += str(self.arguments)
         r += ","
 
         r += ")"

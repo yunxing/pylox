@@ -74,12 +74,46 @@ class Parser:
             return self.print_statement()
         if self.match(TokenType.FOR):
             return self.for_statement()
+        if self.match(TokenType.RETURN):
+            return self.return_statement()
+        if self.match(TokenType.FUN):
+            return self.callable_declaration_statement("function")
         if self.match(TokenType.LEFT_BRACE):
             statement_list = self.block()
             self.consume(TokenType.RIGHT_BRACE,
                          "Expect ';' after return statement.")
             return statements.Block(statement_list)
         return self.expression_statement()
+
+    def callable_declaration_statement(self, kind) -> statements.Stmt:
+        name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
+        self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+        parameters = []
+        while True:
+            if self.match(TokenType.RIGHT_PAREN):
+                break
+            param_name = self.consume(
+                TokenType.IDENTIFIER, "Expect parameter name.")
+            parameters.append(param_name)
+            if not self.match(TokenType.RIGHT_PAREN):
+                self.consume(TokenType.COMMA,
+                             "Expect ',' after parameter name.")
+            else:
+                break
+        self.consume(TokenType.LEFT_BRACE, f"Expect '{{' before {kind} body.")
+        body = self.block()
+        self.consume(TokenType.RIGHT_BRACE, f"Expect '}}' after {kind} body.")
+        return statements.Function(name, parameters, body)
+
+    def return_statement(self) -> statements.Stmt:
+        keyword = self.previous()
+        value = None
+        if not self.check(TokenType.SEMICOLON):
+            value = self.expression()
+        self.consume(TokenType.SEMICOLON,
+                     "Expect ';' after return statement.")
+
+        return statements.Return(keyword, value)
 
     def block(self) -> List[statements.Stmt]:
         statements: List[statements.Stmt] = []
@@ -150,7 +184,7 @@ class Parser:
             right = self.assignment()
             if isinstance(expr, expressions.Variable):
                 return expressions.Assign(expr.name, right)
-            self.error(operator, "Invalid assignment target.")
+            self.error_and_throw(operator, "Invalid assignment target.")
         return expr
 
     def left_associative_binary(self, parse_right, match_tokens: List[TokenType], op_constructor=expressions.Binary) -> expressions.Expr:
@@ -189,7 +223,30 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             return expressions.Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def call(self) -> expressions.Expr:
+        expr = self.primary()
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+        return expr
+
+    def finish_call(self, callee: expressions.Expr) -> expressions.Expr:
+        arguments = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            while True:
+                arguments.append(self.expression())
+                if len(arguments) > 255:
+                    self.add_error(
+                        self.peek(), "Cannot have more than 255 arguments.")
+                if self.match(TokenType.RIGHT_PAREN):
+                    break
+                self.consume(TokenType.COMMA, "Expect ',' after argument.")
+
+        return expressions.Call(callee, self.previous(), arguments)
 
     def primary(self) -> expressions.Expr:
         if self.match(TokenType.FALSE):
@@ -207,14 +264,14 @@ class Parser:
             return expressions.Grouping(expr)
         if self.match(TokenType.IDENTIFIER):
             return expressions.Variable(self.previous())
-        self.error(self.peek(), "Expect expression.")
+        self.error_and_throw(self.peek(), "Expect expression.")
 
     def consume(self, token_type: TokenType, message: str):
         if self.check(token_type):
             return self.advance()
-        self.error(self.peek(), message)
+        self.error_and_throw(self.peek(), message)
 
-    def error(self, token: Token, message: str):
+    def error_and_throw(self, token: Token, message: str):
         self.add_error(message)
         raise ParserError(token, message)
 
