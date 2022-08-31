@@ -65,6 +65,18 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     def visit_block_stmt(self, node: statements.Block):
         self.execute_block(node.statements, Environment(self.environment))
 
+    def visit_if_stmt(self, node: statements.If):
+        if self._is_true(self.evaluate(node.condition)):
+            self.execute(node.then_branch)
+        elif node.else_branch is not None:
+            self.execute(node.else_branch)
+        return None
+
+    def visit_while_stmt(self, node: statements.While):
+        while self._is_true(self.evaluate(node.condition)):
+            self.execute(node.body)
+        return None
+
     def execute_block(self, statements: List[statements.Stmt], environment: Environment):
         previous = self.environment
         try:
@@ -88,6 +100,16 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
     def visit_literal_expr(self, node: expressions.Literal):
         return node.value
+
+    def visit_logical_expr(self, node: expressions.Logical):
+        left = self.evaluate(node.left)
+        if node.operator.type == TokenType.OR:
+            if self._is_true(left):
+                return left
+        else:
+            if not self._is_true(left):
+                return left
+        return self.evaluate(node.right)
 
     def visit_unary_expr(self, node: expressions.Unary):
         if node.operator.type == TokenType.MINUS:

@@ -11,6 +11,8 @@ class ExprVisitor:
         pass
     def visit_literal_expr(self, node : "Literal"):
         pass
+    def visit_logical_expr(self, node : "Logical"):
+        pass
     def visit_variable_expr(self, node : "Variable"):
         pass
     def visit_unary_expr(self, node : "Unary"):
@@ -28,6 +30,8 @@ class Expr:
             return visitor.visit_grouping_expr(self)
         if isinstance(self, Literal):
             return visitor.visit_literal_expr(self)
+        if isinstance(self, Logical):
+            return visitor.visit_logical_expr(self)
         if isinstance(self, Variable):
             return visitor.visit_variable_expr(self)
         if isinstance(self, Unary):
@@ -89,6 +93,27 @@ class Literal(Expr):
         r = "Literal("
         r += f"value : Any = "
         r += str(self.value)
+        r += ","
+
+        r += ")"
+        return r
+class Logical(Expr):
+    def __init__(self , left : Expr, operator : Token, right : Expr):
+        self.left : Expr = left
+        self.operator : Token = operator
+        self.right : Expr = right
+    def __str__(self):
+        r = "Logical("
+        r += f"left : Expr = "
+        r += str(self.left)
+        r += ","
+
+        r += f"operator : Token = "
+        r += str(self.operator)
+        r += ","
+
+        r += f"right : Expr = "
+        r += str(self.right)
         r += ","
 
         r += ")"

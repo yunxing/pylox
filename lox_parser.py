@@ -66,8 +66,14 @@ class Parser:
         return statements.Var(name, initializer)
 
     def statement(self) -> statements.Stmt:
+        if self.match(TokenType.IF):
+            return self.if_statement()
+        if self.match(TokenType.WHILE):
+            return self.while_statement()
         if self.match(TokenType.PRINT):
             return self.print_statement()
+        if self.match(TokenType.FOR):
+            return self.for_statement()
         if self.match(TokenType.LEFT_BRACE):
             statement_list = self.block()
             self.consume(TokenType.RIGHT_BRACE,
@@ -80,6 +86,49 @@ class Parser:
         while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
             statements.append(self.declaration())
         return statements
+
+    def for_statement(self) -> statements.Stmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
+        initializer = None
+        if self.match(TokenType.SEMICOLON):
+            initializer = None
+        elif self.match(TokenType.VAR):
+            initializer = self.var_declaration()
+        else:
+            initializer = self.expression_statement()
+        if not self.check(TokenType.SEMICOLON):
+            condition = self.expression()
+        else:
+            condition = expressions.Literal(True)
+        self.consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
+        increment = None
+        if not self.check(TokenType.RIGHT_PAREN):
+            increment = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
+        body = self.statement()
+        if increment is not None:
+            body = statements.Block([body, statements.Expression(increment)])
+        while_statement = statements.While(condition, body)
+        if initializer is not None:
+            return statements.Block([initializer, while_statement])
+        return while_statement
+
+    def while_statement(self) -> statements.Stmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.")
+        body = self.statement()
+        return statements.While(condition, body)
+
+    def if_statement(self) -> statements.Stmt:
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.")
+        then_branch = self.statement()
+        else_branch = None
+        if self.match(TokenType.ELSE):
+            else_branch = self.statement()
+        return statements.If(condition, then_branch, else_branch)
 
     def print_statement(self) -> statements.Stmt:
         value = self.expression()
@@ -95,7 +144,7 @@ class Parser:
         return self.assignment()
 
     def assignment(self) -> expressions.Expr:
-        expr = self.equality()
+        expr = self.parse_or()
         if self.match(TokenType.EQUAL):
             operator = self.previous()
             right = self.assignment()
@@ -104,7 +153,7 @@ class Parser:
             self.error(operator, "Invalid assignment target.")
         return expr
 
-    def left_associative_binary(self, parse_right, match_tokens: List[TokenType]) -> expressions.Expr:
+    def left_associative_binary(self, parse_right, match_tokens: List[TokenType], op_constructor=expressions.Binary) -> expressions.Expr:
         '''
         Helper function for binary expressions that are left associative.
         '''
@@ -113,9 +162,15 @@ class Parser:
         while self.match(*match_tokens):
             operator = self.previous()
             right = parse_right()
-            expr = expressions.Binary(expr, operator, right)
+            expr = op_constructor(expr, operator, right)
 
         return expr
+
+    def parse_or(self) -> expressions.Expr:
+        return self.left_associative_binary(self.parse_and, [TokenType.OR], op_constructor=expressions.Logical)
+
+    def parse_and(self) -> expressions.Expr:
+        return self.left_associative_binary(self.equality, [TokenType.AND], op_constructor=expressions.Logical)
 
     def equality(self) -> expressions.Expr:
         return self.left_associative_binary(self.comparison, [TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])

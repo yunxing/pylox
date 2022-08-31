@@ -14,6 +14,7 @@ class Environment:
             return
         if self.enclosing is not None:
             self.enclosing.assign(name, value)
+            return
         raise RuntimeError(
             name, f"Undefined variable assignment: {name.lexeme}.")
 
