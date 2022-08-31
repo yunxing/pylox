@@ -6,3 +6,15 @@ Usage
 > python run.py lox_examples/hello_world.lox
 hello world
 ```
+
+There are some other examples under `lox_examples` folder, try them out!
+
+```
+> python run.py lox_examples/fib.lox
+```
+
+TODOs:
+
+- closures
+- classes
+- inheritance
