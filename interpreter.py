@@ -27,12 +27,13 @@ class Callable:
 
 
 class LoxFunction(Callable):
-    def __init__(self, declaration: statements.Function):
+    def __init__(self, declaration: statements.Function, closure: Environment) -> None:
         self.declaration = declaration
         self._arity = len(declaration.params)
+        self._closure = closure
 
     def call(self, interpreter, args):
-        environment = Environment(interpreter.globals)
+        environment = Environment(self._closure)
         for i in range(len(args)):
             environment.define(self.declaration.params[i].lexeme, args[i])
         try:
@@ -105,7 +106,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         return None
 
     def visit_function_stmt(self, node: statements.Function):
-        f = LoxFunction(node)
+        f = LoxFunction(node, self.environment)
         self.environment.define(node.name.lexeme, f)
         return None
 

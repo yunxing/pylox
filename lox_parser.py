@@ -236,7 +236,7 @@ class Parser:
 
     def finish_call(self, callee: expressions.Expr) -> expressions.Expr:
         arguments = []
-        if not self.check(TokenType.RIGHT_PAREN):
+        if not self.match(TokenType.RIGHT_PAREN):
             while True:
                 arguments.append(self.expression())
                 if len(arguments) > 255:
@@ -245,7 +245,6 @@ class Parser:
                 if self.match(TokenType.RIGHT_PAREN):
                     break
                 self.consume(TokenType.COMMA, "Expect ',' after argument.")
-
         return expressions.Call(callee, self.previous(), arguments)
 
     def primary(self) -> expressions.Expr:

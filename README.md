@@ -15,6 +15,6 @@ There are some other examples under `lox_examples` folder, try them out!
 
 TODOs:
 
-- closures
-- classes
-- inheritance
+- [x] Closures
+- [ ] Classes
+- [ ] Inheritance
