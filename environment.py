@@ -28,3 +28,15 @@ class Environment:
         if self.enclosing is not None:
             return self.enclosing.get(name)
         raise RuntimeError(name, f"Undefined variable: {name.lexeme}.")
+
+    def get_at(self, distance: int, name: str) -> Any:
+        return self.ancestor(distance).values[name]
+
+    def ancestor(self, distance: int) -> "Environment":
+        environment = self
+        for _ in range(distance):
+            environment = environment.enclosing
+        return environment
+
+    def assign_at(self, distance: int, name: Token, value: Any) -> None:
+        self.ancestor(distance).values[name.lexeme] = value

@@ -4,21 +4,21 @@ from typing import List, Any
 
 class ExprVisitor:
     def visit_assign_expr(self, node : "Assign"):
-        pass
+        raise NotImplementedError()
     def visit_binary_expr(self, node : "Binary"):
-        pass
+        raise NotImplementedError()
     def visit_call_expr(self, node : "Call"):
-        pass
+        raise NotImplementedError()
     def visit_grouping_expr(self, node : "Grouping"):
-        pass
+        raise NotImplementedError()
     def visit_literal_expr(self, node : "Literal"):
-        pass
+        raise NotImplementedError()
     def visit_logical_expr(self, node : "Logical"):
-        pass
+        raise NotImplementedError()
     def visit_variable_expr(self, node : "Variable"):
-        pass
+        raise NotImplementedError()
     def visit_unary_expr(self, node : "Unary"):
-        pass
+        raise NotImplementedError()
     def default_expr(self, node):
         pass
 

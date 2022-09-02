@@ -7,6 +7,7 @@ from runtime_error import RuntimeError
 from return_exception import ReturnException
 from environment import Environment
 import time
+from resolver import Resolver
 
 
 @dataclasses.dataclass
@@ -78,6 +79,9 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         stmt.accept(self)
 
     def interpret(self, statements: List[statements.Stmt]) -> None:
+        resolver = Resolver()
+        resolver.resolve_stmts(statements)
+        self.locals = resolver.resolutions
         try:
             self.error_frames = []
             for statement in statements:
@@ -150,7 +154,11 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     # Expressions
     def visit_assign_expr(self, node: expressions.Assign):
         value = self.evaluate(node.value)
-        self.environment.assign(node.name, value)
+        distance = self.locals.get(node, None)
+        if distance is not None:
+            self.environment.assign_at(distance, node.name, value)
+        else:
+            self.globals.assign(node.name, value)
         return value
 
     def visit_call_expr(self, node: expressions.Call):
@@ -168,7 +176,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         return self.evaluate(node.expression)
 
     def visit_variable_expr(self, node: expressions.Variable):
-        return self.environment.get(node.name)
+        return self._lookup_variable(node.name, node)
 
     def visit_literal_expr(self, node: expressions.Literal):
         return node.value
@@ -229,6 +237,14 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         elif node_type == TokenType.EQUAL_EQUAL:
             return self._is_equal(left, right)
         raise RuntimeError(f"Unknown binary operator {node.operator.lexeme}")
+
+    # Helpers.
+    def _lookup_variable(self, name: Token, expr: expressions.Expr):
+        distance = self.locals.get(expr, None)
+        if distance is not None:
+            return self.environment.get_at(distance, name.lexeme)
+        else:
+            return self.globals.get(name)
 
     def _is_true(self, value):
         if value is None:

@@ -42,7 +42,7 @@ def define_visitor(output_file: FileIO, base_name: str, types: List[str]):
     for class_name in class_names:
         output_file.write(
             f"    def visit_{class_name.lower()}_{base_name.lower()}(self, node : \"{class_name}\"):\n")
-        output_file.write(f"        pass\n")
+        output_file.write(f"        raise NotImplementedError()\n")
     # Generate a default visitor method.
     output_file.write(f"    def default_{base_name.lower()}(self, node):\n")
     output_file.write(f"        pass\n")

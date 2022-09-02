@@ -5,21 +5,21 @@ from expressions import Expr
 
 class StmtVisitor:
     def visit_expression_stmt(self, node : "Expression"):
-        pass
+        raise NotImplementedError()
     def visit_function_stmt(self, node : "Function"):
-        pass
+        raise NotImplementedError()
     def visit_if_stmt(self, node : "If"):
-        pass
+        raise NotImplementedError()
     def visit_block_stmt(self, node : "Block"):
-        pass
+        raise NotImplementedError()
     def visit_var_stmt(self, node : "Var"):
-        pass
+        raise NotImplementedError()
     def visit_return_stmt(self, node : "Return"):
-        pass
+        raise NotImplementedError()
     def visit_print_stmt(self, node : "Print"):
-        pass
+        raise NotImplementedError()
     def visit_while_stmt(self, node : "While"):
-        pass
+        raise NotImplementedError()
     def default_stmt(self, node):
         pass
 
