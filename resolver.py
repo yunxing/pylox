@@ -85,6 +85,10 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
             self.resolve_expr(node.value)
         return None
 
+    def visit_class_stmt(self, node: statements.Class):
+        self.declare(node.name)
+        self.define(node.name)
+
     # Expressions
 
     def visit_binary_expr(self, node: expressions.Binary):
@@ -95,6 +99,15 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
         self.resolve_expr(node.callee)
         for argument in node.arguments:
             self.resolve_expr(argument)
+
+    def visit_get_expr(self, node: expressions.Get):
+        self.resolve_expr(node.object)
+        return None
+
+    def visit_set_expr(self, node: expressions.Set):
+        self.resolve_expr(node.value)
+        self.resolve_expr(node.object)
+        return None
 
     def visit_grouping_expr(self, node: expressions.Call):
         self.resolve_expr(node.expression)
@@ -115,7 +128,7 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
         return None
 
     def visit_variable_expr(self, node: expressions.Variable):
-        if (len(self.scopes) > 0 or
+        if (len(self.scopes) > 0 and
                 self.scopes[-1].mapping[node.name.lexeme] == False):
             raise RuntimeError(
                 node.name, "Cannot read local variable in its own initializer.")

@@ -74,6 +74,8 @@ class Parser:
             return self.print_statement()
         if self.match(TokenType.FOR):
             return self.for_statement()
+        if self.match(TokenType.CLASS):
+            return self.class_declaration()
         if self.match(TokenType.RETURN):
             return self.return_statement()
         if self.match(TokenType.FUN):
@@ -84,6 +86,15 @@ class Parser:
                          "Expect ';' after return statement.")
             return statements.Block(statement_list)
         return self.expression_statement()
+
+    def class_declaration(self) -> statements.Stmt:
+        name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+        methods = []
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            methods.append(self.callable_declaration_statement("method"))
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+        return statements.Class(name, methods)
 
     def callable_declaration_statement(self, kind) -> statements.Stmt:
         name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
@@ -184,6 +195,10 @@ class Parser:
             right = self.assignment()
             if isinstance(expr, expressions.Variable):
                 return expressions.Assign(expr.name, right)
+            if isinstance(expr, expressions.Get):
+                name = expr.name
+                instance = expr.object
+                return expressions.Set(instance, name, right)
             self.error_and_throw(operator, "Invalid assignment target.")
         return expr
 
@@ -230,6 +245,10 @@ class Parser:
         while True:
             if self.match(TokenType.LEFT_PAREN):
                 expr = self.finish_call(expr)
+            elif self.match(TokenType.DOT):
+                name = self.consume(TokenType.IDENTIFIER,
+                                    "Expect property name after '.'.")
+                expr = expressions.Get(expr, name)
             else:
                 break
         return expr

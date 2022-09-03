@@ -50,6 +50,38 @@ class LoxFunction(Callable):
         return f"<fn {self.declaration.name.lexeme}, arity {self.arity()}>"
 
 
+class LoxInstance:
+    def __init__(self, klass: 'LoxClass') -> None:
+        self.klass = klass
+        self.fields = {}
+
+    def get_field(self, name: Token):
+        if name.lexeme in self.fields:
+            return self.fields[name.lexeme]
+        raise RuntimeError(f"Undefined property '{name.lexeme}'.")
+
+    def set_field(self, name: Token, value: Any):
+        self.fields[name.lexeme] = value
+
+    def __str__(self):
+        return f"<instance of {self.klass.name}>"
+
+
+class LoxClass(Callable):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def __str__(self) -> str:
+        return self.name
+
+    def call(self, interpreter, args):
+        instance = LoxInstance(self)
+        return instance
+
+    def arity(self):
+        return 0
+
+
 class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     def __init__(self) -> None:
         self.globals = self.global_env()
@@ -142,16 +174,12 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
             self.execute(node.body)
         return None
 
-    def execute_block(self, statements: List[statements.Stmt], environment: Environment):
-        previous = self.environment
-        try:
-            self.environment = environment
-            for statement in statements:
-                self.execute(statement)
-        finally:
-            self.environment = previous
-
+    def visit_class_stmt(self, node: statements.Class):
+        self.environment.define(node.name.lexeme, None)
+        klass = LoxClass(node.name.lexeme)
+        self.environment.assign(node.name, klass)
     # Expressions
+
     def visit_assign_expr(self, node: expressions.Assign):
         value = self.evaluate(node.value)
         distance = self.locals.get(node, None)
@@ -238,7 +266,37 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
             return self._is_equal(left, right)
         raise RuntimeError(f"Unknown binary operator {node.operator.lexeme}")
 
+    def visit_get_expr(self, node: expressions.Get):
+        obj = self.evaluate(node.object)
+        if isinstance(obj, LoxInstance):
+            return obj.get_field(node.name)
+        raise RuntimeError(node.name, "Only instances have properties.")
+
+    def visit_set_expr(self, node: expressions.Set):
+        obj = self.evaluate(node.object)
+        if not isinstance(obj, LoxInstance):
+            raise RuntimeError(
+                node.name, f"Only instances have fields. Got {obj.__class__.__name__}.")
+
+        if False:
+            if node.name.lexeme not in obj.fields:
+                raise RuntimeError(
+                    node.name, f"Instance has no field {node.name.lexeme}.")
+
+        value = self.evaluate(node.value)
+        obj.set_field(node.name, value)
+
     # Helpers.
+
+    def execute_block(self, statements: List[statements.Stmt], environment: Environment):
+        previous = self.environment
+        try:
+            self.environment = environment
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous
+
     def _lookup_variable(self, name: Token, expr: expressions.Expr):
         distance = self.locals.get(expr, None)
         if distance is not None:

@@ -12,6 +12,8 @@ class StmtVisitor:
         raise NotImplementedError()
     def visit_block_stmt(self, node : "Block"):
         raise NotImplementedError()
+    def visit_class_stmt(self, node : "Class"):
+        raise NotImplementedError()
     def visit_var_stmt(self, node : "Var"):
         raise NotImplementedError()
     def visit_return_stmt(self, node : "Return"):
@@ -33,6 +35,8 @@ class Stmt:
             return visitor.visit_if_stmt(self)
         if isinstance(self, Block):
             return visitor.visit_block_stmt(self)
+        if isinstance(self, Class):
+            return visitor.visit_class_stmt(self)
         if isinstance(self, Var):
             return visitor.visit_var_stmt(self)
         if isinstance(self, Return):
@@ -103,6 +107,22 @@ class Block(Stmt):
         r = "Block("
         r += f"statements : List[Stmt] = "
         r += str(self.statements)
+        r += ","
+
+        r += ")"
+        return r
+class Class(Stmt):
+    def __init__(self , name : Token, methods : List[Function]):
+        self.name : Token = name
+        self.methods : List[Function] = methods
+    def __str__(self):
+        r = "Class("
+        r += f"name : Token = "
+        r += str(self.name)
+        r += ","
+
+        r += f"methods : List[Function] = "
+        r += str(self.methods)
         r += ","
 
         r += ")"

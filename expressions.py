@@ -11,6 +11,10 @@ class ExprVisitor:
         raise NotImplementedError()
     def visit_grouping_expr(self, node : "Grouping"):
         raise NotImplementedError()
+    def visit_get_expr(self, node : "Get"):
+        raise NotImplementedError()
+    def visit_set_expr(self, node : "Set"):
+        raise NotImplementedError()
     def visit_literal_expr(self, node : "Literal"):
         raise NotImplementedError()
     def visit_logical_expr(self, node : "Logical"):
@@ -32,6 +36,10 @@ class Expr:
             return visitor.visit_call_expr(self)
         if isinstance(self, Grouping):
             return visitor.visit_grouping_expr(self)
+        if isinstance(self, Get):
+            return visitor.visit_get_expr(self)
+        if isinstance(self, Set):
+            return visitor.visit_set_expr(self)
         if isinstance(self, Literal):
             return visitor.visit_literal_expr(self)
         if isinstance(self, Logical):
@@ -107,6 +115,43 @@ class Grouping(Expr):
         r = "Grouping("
         r += f"expression : Expr = "
         r += str(self.expression)
+        r += ","
+
+        r += ")"
+        return r
+class Get(Expr):
+    def __init__(self , object : Expr, name : Token):
+        self.object : Expr = object
+        self.name : Token = name
+    def __str__(self):
+        r = "Get("
+        r += f"object : Expr = "
+        r += str(self.object)
+        r += ","
+
+        r += f"name : Token = "
+        r += str(self.name)
+        r += ","
+
+        r += ")"
+        return r
+class Set(Expr):
+    def __init__(self , object : Expr, name : Token, value : Expr):
+        self.object : Expr = object
+        self.name : Token = name
+        self.value : Expr = value
+    def __str__(self):
+        r = "Set("
+        r += f"object : Expr = "
+        r += str(self.object)
+        r += ","
+
+        r += f"name : Token = "
+        r += str(self.name)
+        r += ","
+
+        r += f"value : Expr = "
+        r += str(self.value)
         r += ","
 
         r += ")"
